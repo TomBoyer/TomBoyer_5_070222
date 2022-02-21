@@ -65,20 +65,42 @@ fetch("http://localhost:3000/api/products/" + id, {
         // console.log(localStorage.getItem("basket")); normal 2 click necessaires ?
 
         if (cart) {
+          //si item dans le local storage
           // console.log('if');
           cart.push(cartProduct);
         } else {
+          //si pas d'item dans le local storage
           // console.log('else');
           cart = [cartProduct];
         }
 
         localStorage.setItem("basket", JSON.stringify(cart));
-        
+
+        //alert pour préciser au user les infos stockées dans le panier
+        // alert(
+        //   `Vous venez d'ajouter ${quantity} ${product.name} ${color} à votre panier`
+        // );
+
+        //PopUp pour préciser au user les infos stockées dans le panier
+        const popupConfirmation = () => {
+          if (
+            window.confirm(
+              `Vous venez d'ajouter ${quantity} ${product.name} ${color} à votre panier
+              
+Consulter le panier OK ou revenir à l'accueil ANNULER`
+            )
+          ) {
+            window.location.href = "cart.html";
+          } else {
+            window.location.href = "index.html";
+          }
+        };
+        popupConfirmation();
       } else {
         //alerter user si item non valide
-        alert(
-          "Merci de selectionner une quantitée et une couleur pour poursuivre"
-        );
+        alert("Merci de choisir une quantitée et une couleur pour poursuivre");
+
+        // window.confirm(`Merci de selectionner une quantitée et une couleur pour poursuivre`)
       }
 
       // localStorage.getItem("basket");
@@ -89,8 +111,3 @@ fetch("http://localhost:3000/api/products/" + id, {
     //An error has occurred
     alert("Une erreur est survenue merci de réesayer");
   });
-
-
-  // alert(
-  //   `Vous venez d'ajouter ${quantity} ${product.name} ${color} à votre panier`
-  // );

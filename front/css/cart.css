@@ -158,6 +158,7 @@ h2 {
 	color: #fbbcbc;
 	font-size: 15px;
 	margin-left: 8px;
+	margin-top: 8px;
 }
 
 .cart__order__form__submit {
@@ -180,7 +181,20 @@ h2 {
 	box-shadow: rgb(42 18 206 / 90%) 0 0 22px 6px;
 }
 
+.cart__order input {
+	/* text-align: center; */
+	padding-left: 20px;
+}
 
+/* .cart__order .sucess {
+	color: green;
+	text-decoration: underline;
+}
+
+.cart__order .error {
+	color: red;
+	text-decoration: underline;
+} */
 
 /***************/
 /*Media queries*/

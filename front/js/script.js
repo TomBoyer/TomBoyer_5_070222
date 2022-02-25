@@ -21,10 +21,10 @@ fetch("http://localhost:3000/api/products/", {
     }
   })
   .then(function (products) {
-    // console.log(value);
+    // console.log(products);
 
     products.forEach((product) => {
-      // console.log(data);
+      // console.log(product);
       document.getElementById("items").innerHTML += `
       <a href="./product.html?id=${product._id}">
             <article>
@@ -38,5 +38,5 @@ fetch("http://localhost:3000/api/products/", {
   })
   .catch(function (err) {
     //An error has occurred
-    alert('Une erreur est survenue merci de réesayer')
+    alert("Une erreur est survenue merci de réesayer");
   });

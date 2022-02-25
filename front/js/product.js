@@ -48,7 +48,7 @@ fetch("http://localhost:3000/api/products/" + id, {
       colors.add(option);
     });
 
-    //ajouter au panier : écoute du bouton pour ajouter les éléments de la selections dans le local storage
+    //ajouter au panier : écoute du bouton pour ajouter les éléments de la selection dans le local storage
 
     let addToCart = document.getElementById("addToCart");
 
@@ -59,43 +59,57 @@ fetch("http://localhost:3000/api/products/" + id, {
       // console.log(quantity, color, productId);
 
       //stocker la selection dans le local storage si quantité et couleur valide
+      //déclarer son chariot
+      //déclarer son chariot de produit
       if (quantity > 0 && quantity < 100 && color != "") {
         let cart = JSON.parse(localStorage.getItem("basket"));
         let cartProduct = [productId, color, quantity];
-        // console.log(localStorage.getItem("basket")); normal 2 click necessaires ?
+        // console.log(localStorage.getItem("basket"));
 
         if (cart) {
-          //si item dans le local storage
-          // console.log('if');
-          cart.push(cartProduct);
+          //si item dans le local storage (dans le chariot) : vérifier que l'id du local storage est = à celui que je veux push
+          //j'ai récupéré les id présents dans le local storage
+          //je déclare un boolean
+          find = false;
+
+          //boucle pour vérifier tous les produits présents dans mon chariot
+          //si produit avec meme ID et meme color => ajouter la quantitée au panier 
+          cart.forEach(function callback(produit, index) {
+            if (produit[0] == productId && produit[1] == color) {
+              let newQuantity = cart[index][2] + quantity;
+
+              console.log(quantity);
+
+              cart[index][2] = newQuantity;
+
+              find = true;
+            }
+          });
+
+          if (find == false) {
+            cart.push(cartProduct);
+          }
         } else {
           //si pas d'item dans le local storage
           // console.log('else');
           cart = [cartProduct];
         }
 
+        //stockage dans le local storage avec une key + traduire le chariot en JSON
         localStorage.setItem("basket", JSON.stringify(cart));
 
-        //alert pour préciser au user les infos stockées dans le panier
-        // alert(
-        //   `Vous venez d'ajouter ${quantity} ${product.name} ${color} à votre panier`
-        // );
-
         //PopUp pour préciser au user les infos stockées dans le panier
-        const popupConfirmation = () => {
-          if (
-            window.confirm(
-              `Vous venez d'ajouter ${quantity} ${product.name} ${color} à votre panier
+        if (
+          window.confirm(
+            `Vous venez d'ajouter ${quantity} ${product.name} ${color} à votre panier
               
 Consulter le panier OK ou revenir à l'accueil ANNULER`
-            )
-          ) {
-            window.location.href = "cart.html";
-          } else {
-            window.location.href = "index.html";
-          }
-        };
-        popupConfirmation();
+          )
+        ) {
+          window.location.href = "cart.html";
+        } else {
+          window.location.href = "index.html";
+        }
       } else {
         //alerter user si item non valide
         alert("Merci de choisir une quantitée et une couleur pour poursuivre");

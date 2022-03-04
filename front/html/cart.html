@@ -91,9 +91,14 @@
 
             <form method="get" class="cart__order__form">
 
+              <div class="text-anim">
+                <h3>Merci de valider le formulaire suivant pour finaliser votre commande :</h3>
+                <h3 id="target"></h3>
+              </div>
+
               <div class="cart__order__form__question">
                 <label for="firstName">Prénom: </label>
-                <input type="text" name="firstName" id="firstName" required>
+                <input type="text" name="firstName" id="firstName" required placeholder="Michel">
                 <p id="firstNameErrorMsg">
                   <!-- ceci est un message d'erreur -->
                 </p>
@@ -101,31 +106,36 @@
 
               <div class="cart__order__form__question">
                 <label for="lastName">Nom: </label>
-                <input type="text" name="lastName" id="lastName" required>
+                <input type="text" name="lastName" id="lastName" required placeholder="Dupont">
                 <p id="lastNameErrorMsg"></p><!-- ceci est un message d'erreur -->
                 </p>
               </div>
+
               <div class="cart__order__form__question">
                 <label for="address">Adresse: </label>
-                <input type="text" name="address" id="address" required>
+                <input type="text" name="address" id="address" required placeholder="2 rue de la Chose">
                 <p id="addressErrorMsg"></p><!-- ceci est un message d'erreur -->
                 </p>
               </div>
+
               <div class="cart__order__form__question">
                 <label for="city">Ville: </label>
-                <input type="text" name="city" id="city" required>
+                <input type="text" name="city" id="city" required placeholder="Parici">
                 <p id="cityErrorMsg"></p><!-- ceci est un message d'erreur -->
                 </p>
               </div>
+
               <div class="cart__order__form__question">
                 <label for="email">Email: </label>
-                <input type="email" name="email" id="email" required>
+                <input type="email" name="email" id="email" required placeholder="truc@machin.fr">
                 <p id="emailErrorMsg"></p><!-- ceci est un message d'erreur -->
                 </p>
               </div>
+
               <div class="cart__order__form__submit">
                 <input type="submit" value="Commander !" id="order">
               </div>
+
             </form>
 
           </div>

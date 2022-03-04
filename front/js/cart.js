@@ -1,6 +1,6 @@
 //récupérer la variable (chariot de produits) précédement créée pour stocker les infos dans le local storage
 let cartProducts = JSON.parse(localStorage.getItem("basket"));
-// console.log(cartProducts);
+// console.log(cartProducts[0]);
 
 //afficher les produits du panier
 //pointer les emplacements : cartItem + prix total + quantitée totale, puis injecter les infos stockées dans le local storage + API
@@ -8,7 +8,14 @@ const cartItems = document.getElementById("cart__items");
 let totalPrice = document.getElementById("totalPrice");
 let totalQuantity = document.getElementById("totalQuantity");
 
-//si pas d'item dans le local storage : afficher "le panier est vide" + prix = 0 + quantitée = pas d'article
+// gérer dynamiquement la suppression
+function deletArticle(i) {
+  cartProducts.splice(i, 1);
+  localStorage.setItem("basket", JSON.stringify(cartProducts));
+  location.reload();
+}
+
+//si pas d'item dans le local storage : afficher "le panier est vide" + prix = 0 + quantitée = pas d'article ET cacher le form
 if (cartProducts === null) {
   const emptyBasket = `
   <div class="cart__empty"> 
@@ -19,12 +26,18 @@ if (cartProducts === null) {
   cartItems.innerHTML = emptyBasket;
   totalPrice.textContent = "0";
   totalQuantity.textContent = "Aucune séléction dans le panier des";
+
+  const form = document.querySelector(".cart__order__form");
+  // console.log(form);
+  form.classList.add("disableForm");
 } else {
   //si items dans le local storage : récupérer les infos stockées dans le local storage et les injecter dans les emplacements dédiés de la page cart.html
 
   //déclarer prix total et quantitée total pour calcul + affichage
   let totalP = 0;
   let totalQ = 0;
+
+  let priceArray = [];
 
   //boucle pour parcourir tous les produits présents dans le local storage
   cartProducts.forEach((cartProduct) => {
@@ -48,14 +61,14 @@ if (cartProducts === null) {
       //pointer les noeuds pour injecter les infos de l'api + local storage
       .then(function (product) {
         let price = product.price;
+        priceArray.push(product.price);
         let quantity = cartProduct[2];
         let totalPriceRaw = price * quantity;
         // console.log(totalPriceRaw);
 
         totalP = totalP + totalPriceRaw;
-        // console.log(totalP);
         totalQ = totalQ + quantity;
-        // console.log(totalQ);
+        // console.log(totalQ, totalP);
 
         cartItems.innerHTML += `
         <article class="cart__item" data-id="${id}" data-color="${cartProduct[1]}">
@@ -66,12 +79,12 @@ if (cartProducts === null) {
                 <div class="cart__item__content__description">
                 <h2>${product.name}</h2>
                 <p>${cartProduct[1]}</p>
-                <p>${totalPriceRaw} €</p>
+                <p class="product__price" id="product__price">${totalPriceRaw} €</p>
                 </div>
                 <div class="cart__item__content__settings">
                 <div class="cart__item__content__settings__quantity">
                     <p>Qté : </p>
-                    <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${cartProduct[2]}">
+                    <input type="number" id="itemQuantity" class="itemQuantity" name="itemQuantity" min="0" max="100" value="${cartProduct[2]}">
                 </div>
                 <div class="cart__item__content__settings__delete">
                     <p class="deleteItem"><ion-icon name="trash-outline"></ion-icon></p>
@@ -80,206 +93,327 @@ if (cartProducts === null) {
             </div>
         </article>
         `;
+        // // gérer dynamiquement le prix avec le select
+        // document
+        //   .querySelector(".itemQuantity")
+        //   .addEventListener("change", function (e) {
+        //     // console.log(e.target.value);
 
+        //     document.querySelector(".product__price").innerText =
+        //       price * e.target.value;
+        //   });
+
+        // document
+        //   .querySelectorAll(".deleteItem")
+        //   .addEventListener("click", function (i) {
+        //     cartProducts[i].remove();
+        //   });
+
+        //prix total et quantitée totale
         totalPrice.textContent = totalP;
         totalQuantity.textContent = totalQ;
         // console.log(totalP);
 
-        // // créer function pour supprimer un article
-        // function deleteArticle(i) {
-        //   cartProducts.splice(i, 1);
-        //   localStorage.setItem("basket", JSON.stringify(cartProducts));
-        //   //  location.reload();
-        // }
+        // eventlistener sur le select pour augmenter/diminuer dynamiquement la quantitée et le prix
+        let selectQuantity = document.querySelectorAll(".itemQuantity");
 
-        // // eventlistener sur la corbeille pour remove un article complet
-        // let btnDeletItem = document.querySelectorAll(".deleteItem");
-        // console.log(btnDeletItem);
+        selectQuantity.forEach((quantity, i) => {
+          quantity.addEventListener("change", () => {
+            // console.log(quantity.value, i);
 
-        // btnDeletItem.add
+            if (quantity.value == 0) {
+              deletArticle(i);
+            } else {
+              // let oldQuantity =
+
+              let newPrice = document.querySelectorAll(".product__price");
+              // console.log(priceArray[i]);
+              newPrice[i].textContent =
+                String(quantity.value * priceArray[i]) + " €";
+              // console.log(newPrice[i]);
+
+              // console.log(cartProducts[i][2], quantity.value, priceArray[i]);
+              // console.log(totalQ, cartProducts[i][2], parseInt(quantity.value));
+
+              totalQ = 0;
+              totalP = 0;
+              cartProducts[i][2] = quantity.value;
+
+              cartProducts.forEach((product, key) => {
+                totalQ = totalQ + parseInt(product[2]);
+                totalP = totalP + parseInt(product[2] * priceArray[key]);
+              });
+
+              totalQuantity.textContent = totalQ;
+
+              totalPrice.textContent =
+                totalP -
+                cartProducts[i][2] * priceArray[i] +
+                parseInt(quantity.value) * priceArray[i];
+            }
+          });
+        });
+
+        let deletBtn = document.querySelectorAll(".deleteItem");
+
+        deletBtn.forEach((btn, i) => {
+          btn.addEventListener("click", () => {
+            deletArticle(i);
+          });
+        });
       });
   });
 }
 
-// // eventlistener sur le select pour augmenter/diminuer dynamiquement la quantitée et le prix
+//------------------
+//partie du form-checker
+//------------------
 
-/* Gestion du Form */
-// declarer variable pour formulaire et regex
-let form = document.querySelector(".cart__order__form");
-let regexArray = [
-  /^[a-zA-Z\u00C0-\u00FF]*$/,
-  /^[a-zA-Z0-9\u00C0-\u00FF\s,'-]*$/,
-  /^([a-zA-Z\u0080-\u024F]+(?:. |-| |'))*[a-zA-Z\u0080-\u024F]*$/,
-  /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g,
-];
-// console.log(form, regexArray);
+//1. pointer les inputs
+const inputs = document.querySelectorAll(
+  'input[type="text"],input[type="email"]'
+);
 
-//fonction pour valider le formulaire
-function validForm(element, i, elementinDom, message) {
-  const valueTest = regexArray[i].test(element.value);
-  const errorMsg = document.querySelector(elementinDom);
-  regexArray[i].test("²");
+//1.1 déclarer les variables de stockage d'informations
+let firstName, lastName, address, city, email; //variable stockant les infos
 
-  if (valueTest && element.value != "") {
-    errorMsg.textContent = "";
-    return true;
+//1.2 déclarer la logique de controle dynamique
+const errorDisplay = (tag, message /* valid */) => {
+  // const container = document.querySelector(
+  //   ".cart__order__form__question" + "." + tag
+  // );
+  const errorMsg = document.querySelector("#" + tag + "ErrorMsg");
+
+  //   console.log(container);
+  //   console.log(p);
+
+  // if (!valid) {
+  //   // container.classList.add("error");
+  //   errorMsg.textContent = message;
+  // } else {
+  //   // container.classList.remove("error");
+  //   errorMsg.textContent = message;
+  // }
+
+  errorMsg.textContent = message;
+};
+
+//1.3 déclarer logique de contrôle pour chaque input
+//1.3.1 firstName
+const firstNameChecker = (value) => {
+  if (value.length > 0 && (value.length < 3 || value.length > 20)) {
+    //tester longueur
+    errorDisplay("firstName", "le prénom doit faire entre 3 et 20 caractères"); //le tag est donc firstName, le msg est donc blabla 3-20
+    firstName = null; //je vide la variable firstName si pas valide
+  } else if (!value.match(/^[a-zA-z0-9_.-]*$/)) {
+    //je test le caractères
+    errorDisplay(
+      "firstName",
+      "le prénom ne doit pas contenir de caracteres spéciaux"
+    ); //le tag est donc firstName, le msg est donc blabla caract spe
+    firstName = null; //je vide la variable firstName si pas valide
   } else {
-    errorMsg.textContent = message;
-    return false;
+    //je valide
+    errorDisplay("firstName", "", true); //le tag est donc firstName, le msg y'en a pas, on passe sur true
+    firstName = value; //on récupère l'info écrite dans l'input grace à value
   }
-}
+};
 
-//fonctions pour vérifier les champs :
-//firstName
-form.firstName.addEventListener("change", () => {
-  validForm(
-    form.firstName,
-    0,
-    "#firstNameErrorMsg",
-    "Merci de renseigner votre prénom pour continuer"
-  );
+//1.3.2 lastName
+const lastNameChecker = (value) => {
+  if (value.length > 0 && (value.length < 3 || value.length > 20)) {
+    //tester longueur
+    errorDisplay("lastName", "le nom doit faire entre 3 et 20 caractères"); //le tag est donc lastName, le msg est donc blabla 3-20
+    lastName = null; //je vide la variable lastName si pas valide
+  } else if (!value.match(/^[a-zA-z0-9_.-]*$/)) {
+    //je test les caractères
+    errorDisplay(
+      "lastName",
+      "le nom ne doit pas contenir de caracteres spéciaux"
+    ); //le tag est donc lastName, le msg est donc blabla caract spe
+    lastName = null; //je vide la variable lastName si pas valide
+  } else {
+    //je valide
+    errorDisplay("lastName", "", true); //le tag est donc lastName, le msg y'en a pas, on passe sur true
+    lastName = value; //on récupère l'info écrite dans l'input grace à value
+  }
+};
+
+//1.3.3 address
+const addressChecker = (value) => {
+  if (value.length > 0 && (value.length < 3 || value.length > 30)) {
+    //tester longueur
+    errorDisplay("address", "l'adresse doit faire entre 3 et 30 caractères"); //le tag est donc adress, le msg est donc blabla 3-30
+    address = null; //je vide la variable address si pas valide
+  } else if (!value.match(/^[a-zA-z0-9_.-]*$/)) {
+    //je test les caractères
+    errorDisplay(
+      "address",
+      "l'adresse ne doit pas contenir de caracteres spéciaux"
+    ); //le tag est donc address, le msg est donc blabla caract spe
+    address = null; //je vide la variable address si pas valide
+  } else {
+    //je valide
+    errorDisplay("address", "", true); //le tag est donc address, le msg y'en a pas, on passe sur true
+    address = value; //on récupère l'info écrite dans l'input grace à value
+  }
+};
+
+//1.3.4 city
+const cityChecker = (value) => {
+  if (value.length > 0 && (value.length < 3 || value.length > 30)) {
+    //tester longueur
+    errorDisplay("city", "la ville doit faire entre 3 et 30 caractères"); //le tag est donc city, le msg est donc blabla 3-30
+    city = null; //je vide la variable city si pas valide
+  } else if (!value.match(/^[a-zA-z0-9_.-]*$/)) {
+    //je test les caractères
+    errorDisplay(
+      "city",
+      "la ville ne doit pas contenir de caracteres spéciaux"
+    ); //le tag est donc city, le msg est donc blabla caract spe
+    city = null; //je vide la variable city si pas valide
+  } else {
+    //je valide
+    errorDisplay("city", "", true); //le tag est donc city, le msg y'en a pas, on passe sur true
+    city = value; //on récupère l'info écrite dans l'input grace à value
+  }
+};
+
+//1.3.5 email
+const emailChecker = (value) => {
+  if (!value.match(/^[\w_-]+@[\w-]+\.[a-z]{2,4}$/i)) {
+    //je test les caractères
+    errorDisplay("email", "Le mail n'est pas valide"); //le tag est donc email, le msg est donc pas valide
+    email = null; //je vide la variable email si pas valide
+  } else {
+    //je valide
+    errorDisplay("email", "", true); //le tag est donc email, le msg y'en a pas, on passe sur true
+    email = value; //on récupère l'info écrite dans l'input grace à value
+  }
+};
+
+//2. logique de controle : on a besoin d'analyser ce qui est dans les inputs et de valider ou non
+inputs.forEach((input) => {
+  //pour chaque input présent dans la const inputs je vérifie que les données = valides
+  input.addEventListener("input", (e) => {
+    //j'écoute les inputs
+    // console.log(e.target.id); //j'affiche l'id de l'input ou je suis
+    // console.log(e.target.value); //j'affiche la valeur écrite dans l'input ou je suis
+    switch (e.target.id) {
+      case "firstName":
+        firstNameChecker(e.target.value);
+        break;
+      case "lastName":
+        lastNameChecker(e.target.value);
+        break;
+      case "address":
+        addressChecker(e.target.value);
+        break;
+      case "city":
+        cityChecker(e.target.value);
+        break;
+      case "email":
+        emailChecker(e.target.value);
+        break;
+      default:
+        null;
+    }
+  });
 });
 
-//lastName
-form.lastName.addEventListener("change", () => {
-  validForm(
-    form.lastName,
-    0,
-    "#lastNameErrorMsg",
-    "Merci de renseigner votre nom pour continuer"
-  );
-});
+//3.Récupérer les données écrites par le user dans les inputs
+//3.1 déclarer la const pour cibler le form
+const form = document.querySelector(".cart__order__form");
+// console.log(form);
 
-//adress
-form.address.addEventListener("change", () => {
-  validForm(
-    form.adress,
-    1,
-    "#addressErrorMsg",
-    "Merci de renseigner une adresse valide pour continuer"
-  );
-});
-
-//city
-form.city.addEventListener("change", () => {
-  validForm(
-    form.city,
-    2,
-    "#cityErrorMsg",
-    "Merci de renseigner votre ville pour continuer"
-  );
-});
-
-//email
-form.email.addEventListener("change", () => {
-  validForm(
-    form.email,
-    3,
-    "#cityEemailErrorMsgrrorMsg",
-    "Merci de renseigner une adresse mail valide pour continuer"
-  );
-});
-
-//fonction pour écouter le bouton submit du formulaire
-//valider que tous les champs sont remplis
-const orderBtn = document.getElementById("order");
-
-orderBtn.addEventListener("click", (e) => {
-  let testValid =
-    validForm(
-      form.firstName,
-      0,
-      "#firstNameErrorMsg",
-      "Merci de renseigner votre prénom pour continuer"
-    ) &&
-    validForm(
-      form.lastName,
-      0,
-      "#lastNameErrorMsg",
-      "Merci de renseigner votre nom pour continuer"
-    ) &&
-    validForm(
-      form.adress,
-      1,
-      "#addressErrorMsg",
-      "Merci de renseigner une adresse valide pour continuer"
-    ) &&
-    validForm(
-      form.city,
-      2,
-      "#cityErrorMsg",
-      "Merci de renseigner votre ville pour continuer"
-    ) &&
-    validForm(
-      form.email,
-      3,
-      "#cityEemailErrorMsgrrorMsg",
-      "Merci de renseigner une adresse mail valide pour continuer"
-    );
-  //empecher l'envoie du formulaire si un champs n'est pas complété
+//3.2
+form.addEventListener("submit", (e) => {
+  // console.log("le form part");
   e.preventDefault();
 
-  if (testValid) {
-    //si les champs sont bien complétés et que le panier n'est pas vide = ok
-    console.log("le test valid est ok")
-    if (cartProducts == null) {
-      console.log(
-        "Merci d'ajouter au moins un article dans votre panier pour effectuer une commande"
-      );
-    } else if (cartProducts.length == 0) {
-      console.log(
-        "Merci d'ajouter au moins un article dans votre panier pour effectuer une commande"
-      );
-    } else {
-      //stocker l'/les id(s) dans un tableau
-      const items = [];
-      cartProducts.forEach((item) => {
-        items.push(item.id);
-      });
-      //déclarer les informations de contact dans un objet
-      const contact = {
-        firstName: form.firstName.value,
-        lastName: form.lastName.value,
-        address: form.address.value,
-        city: form.city.value,
-        email: form.email.value,
-      };
-      // déclarer la commande = les items + les infos de contact dans un objet
-      const infosOrder = {
-        items,
-        contact,
-      };
+  if (firstName && lastName && address && city && email) {
+    const contact = {
+      firstName: firstName,
+      lastName: lastName,
+      address: address,
+      city: city,
+      email: email,
+    };
+    console.log(contact);
 
-      //Besoin de récupérer l'id par l'api
-      const datas = {
-        method: "POST",
-        body: JSON.stringify(infosOrder),
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      };
-      fetch("http://localhost:3000/api/products/", datas)
-      .then(function (result) {
-        if (result.ok) {
-          return result.json();
-        }
-      })
-      .then(function(listDatas) {
-        localStorage.setItem("orderId", JSON.stringify(listDatas.orderID))
-        document.location.href = `confirmation.html?id=${listDatas.orderID}`
-      })
-      .catch(function (err) {
-        //An error has occurred
-        console.log("Une erreur est survenue merci de réesayer");
-      });
-    }
+    const products = [];
+
+    cartProducts.forEach((cartProduct) => {
+      for (let i = 0; i < cartProduct[2]; i++) {
+        products.push(cartProduct[0]);
+      }
+    });
+    console.log(products);
+
+    //utiliser un fecth sur le /order : utiliser POST, contact puis le produit sous forme string. stringify
+
+    //stocker dans le local storage
+    localStorage.setItem("contact", JSON.stringify(contact));
+    // /body: JSON.stringify({ contact, products }),
+    //stocker dans le local storage
+    localStorage.setItem("basket", JSON.stringify(cartProducts));
+
+    inputs.forEach((input) => {
+      input.value = "";
+    });
+
+    (firstName = null),
+      (lastName = null),
+      (address = null),
+      (city = null),
+      (email = null);
+
+    // alert("ok ça c'est fait");
+
+    window.location.href = "confirmation.html"
   } else {
-    //si tous les champs ne sont pas bien complétés ou que le panier est vide = prévenir que le formulaire n'est pas complété
-    console.log(
-      "Merci d'ajouter au moins un article dans votre panier et de compléter tous les champs correctement afin de finaliser votre commande"
-    );
+    alert("manque un truc chef");
   }
 });
 
-/* Fin Gestion du Form */
+//------------------
+//partie du text-anim
+//------------------
+const target = document.getElementById("target");
+let array = ["Prénom", "Nom", "Adresse", "Ville", "Email"];
+let wordIndex = 0;
+let letterIndex = 0;
+
+// target.textContent = array[0];
+
+const createLettre = () => {
+  const letter = document.createElement("div");
+  target.appendChild(letter);
+
+  letter.textContent = array[wordIndex][letterIndex];
+
+  setTimeout(() => {
+    letter.remove();
+  }, 2000);
+};
+
+const loop = () => {
+  setTimeout(() => {
+    if (wordIndex >= array.length) {
+      wordIndex = 0;
+      letterIndex = 0;
+      loop();
+    } else if (letterIndex < array[wordIndex].length) {
+      createLettre();
+      letterIndex++;
+      loop();
+    } else {
+      wordIndex++;
+      letterIndex = 0;
+      setTimeout(() => {
+        loop();
+      }, 2000);
+    }
+  }, 60);
+};
+loop();

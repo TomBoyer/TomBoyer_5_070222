@@ -182,8 +182,11 @@ h2 {
 }
 
 .cart__order input {
-	/* text-align: center; */
 	padding-left: 20px;
+}
+
+.disableForm{
+	visibility: hidden;
 }
 
 /* .cart__order .sucess {
@@ -195,6 +198,57 @@ h2 {
 	color: red;
 	text-decoration: underline;
 } */
+
+
+/*******/
+/*Order Text Anim*/
+/*******/
+
+.text-anim {
+	border: solid 1px #fff;
+	border-radius: 5px;
+	padding: .2em;
+	margin: .5em 0 1.5em 0;
+	min-height: 65px;
+
+	/* text-align: center; */
+}
+
+.text-anim h3 {
+	margin-left: 17px;
+}
+
+#target {
+	display: flex;
+	margin-left: 1rem;
+	position: relative;
+	min-height: 25px;
+}
+
+#target::after {
+	content: "";
+	position: absolute;
+	height: 1rem;
+	width: 3px;
+	top: 8px;
+	background: #fff;
+	transform: translateY(-5px);
+	left: -9px;
+	animation: anim 0.8s linear infinite;
+
+	/* display: flex;
+	justify-content: center; */
+}
+
+@keyframes anim {
+	50% {
+		opacity: 0.1;
+	}
+
+	100% {
+		opacity: 1;
+	}
+}
 
 /***************/
 /*Media queries*/

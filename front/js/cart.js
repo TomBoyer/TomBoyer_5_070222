@@ -9,14 +9,15 @@ let totalPrice = document.getElementById("totalPrice");
 let totalQuantity = document.getElementById("totalQuantity");
 
 // gérer dynamiquement la suppression
-function deletArticle(i) {
+function deletArticle(i, rowElmnt) {
   cartProducts.splice(i, 1);
   localStorage.setItem("basket", JSON.stringify(cartProducts));
-  location.reload();
+  // location.reload();
+  rowElmnt.remove();
 }
 
-//si pas d'item dans le local storage : afficher "le panier est vide" + prix = 0 + quantitée = pas d'article ET cacher le form
-if (cartProducts === null) {
+//fonction panier affichage vide + disable form
+function noItems() {
   const emptyBasket = `
   <div class="cart__empty"> 
   <p>Le panier est vide</p>
@@ -30,6 +31,11 @@ if (cartProducts === null) {
   const form = document.querySelector(".cart__order__form");
   // console.log(form);
   form.classList.add("disableForm");
+}
+
+//si pas d'item dans le local storage : afficher "le panier est vide" + prix = 0 + quantitée = pas d'article ET cacher le form
+if (cartProducts === null) {
+  noItems();
 } else {
   //si items dans le local storage : récupérer les infos stockées dans le local storage et les injecter dans les emplacements dédiés de la page cart.html
 
@@ -93,21 +99,6 @@ if (cartProducts === null) {
             </div>
         </article>
         `;
-        // // gérer dynamiquement le prix avec le select
-        // document
-        //   .querySelector(".itemQuantity")
-        //   .addEventListener("change", function (e) {
-        //     // console.log(e.target.value);
-
-        //     document.querySelector(".product__price").innerText =
-        //       price * e.target.value;
-        //   });
-
-        // document
-        //   .querySelectorAll(".deleteItem")
-        //   .addEventListener("click", function (i) {
-        //     cartProducts[i].remove();
-        //   });
 
         //prix total et quantitée totale
         totalPrice.textContent = totalP;
@@ -122,16 +113,17 @@ if (cartProducts === null) {
             // console.log(quantity.value, i);
 
             if (quantity.value == 0) {
-              deletArticle(i);
+              deletArticle(
+                i,
+                quantity.parentElement.parentElement.parentElement.parentElement
+              );
+              // console.log(quantity.parentElement.parentElement.parentElement.parentElement);
             } else {
-              // let oldQuantity =
-
               let newPrice = document.querySelectorAll(".product__price");
               // console.log(priceArray[i]);
               newPrice[i].textContent =
                 String(quantity.value * priceArray[i]) + " €";
               // console.log(newPrice[i]);
-
               // console.log(cartProducts[i][2], quantity.value, priceArray[i]);
               // console.log(totalQ, cartProducts[i][2], parseInt(quantity.value));
 
@@ -151,6 +143,8 @@ if (cartProducts === null) {
                 cartProducts[i][2] * priceArray[i] +
                 parseInt(quantity.value) * priceArray[i];
             }
+
+            
           });
         });
 
@@ -158,7 +152,11 @@ if (cartProducts === null) {
 
         deletBtn.forEach((btn, i) => {
           btn.addEventListener("click", () => {
-            deletArticle(i);
+            deletArticle(
+              i,
+              btn.parentElement.parentElement.parentElement.parentElement
+            );
+            // console.log(btn.parentElement.parentElement.parentElement.parentElement);
           });
         });
       });
@@ -179,22 +177,7 @@ let firstName, lastName, address, city, email; //variable stockant les infos
 
 //1.2 déclarer la logique de controle dynamique
 const errorDisplay = (tag, message /* valid */) => {
-  // const container = document.querySelector(
-  //   ".cart__order__form__question" + "." + tag
-  // );
   const errorMsg = document.querySelector("#" + tag + "ErrorMsg");
-
-  //   console.log(container);
-  //   console.log(p);
-
-  // if (!valid) {
-  //   // container.classList.add("error");
-  //   errorMsg.textContent = message;
-  // } else {
-  //   // container.classList.remove("error");
-  //   errorMsg.textContent = message;
-  // }
-
   errorMsg.textContent = message;
 };
 
@@ -350,8 +333,6 @@ form.addEventListener("submit", (e) => {
     });
     console.log(products);
 
-    //utiliser un fecth sur le /order : utiliser POST, contact puis le produit sous forme string. stringify
-
     //stocker dans le local storage
     localStorage.setItem("contact", JSON.stringify(contact));
     // /body: JSON.stringify({ contact, products }),
@@ -370,7 +351,31 @@ form.addEventListener("submit", (e) => {
 
     // alert("ok ça c'est fait");
 
-    window.location.href = "confirmation.html"
+    //utiliser un fecth sur le /order : utiliser POST, contact puis le produit sous forme string. stringify
+    fetch("http://localhost:3000/api/products/order", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        products,
+        contact,
+      }),
+    })
+      .then(function (result) {
+        if (result.ok) {
+          return result.json();
+        }
+      })
+      .then((order) => {
+        console.log(order);
+        window.location.href = `confirmation.html?orderId=${order.orderId}`;
+      })
+      .catch(function (err) {
+        //An error has occurred
+        alert("Une erreur est survenue merci de réesayer");
+      });
   } else {
     alert("manque un truc chef");
   }

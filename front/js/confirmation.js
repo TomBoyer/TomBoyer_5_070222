@@ -26,4 +26,4 @@ function clearLocalStorage() {
   localStorage.removeItem("contact");
   localStorage.removeItem("basket");
 }
-clearLocalStorage();
+// clearLocalStorage();

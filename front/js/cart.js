@@ -31,6 +31,8 @@ function noItems() {
   const form = document.querySelector(".cart__order__form");
   // console.log(form);
   form.classList.add("disableForm");
+
+  // localStorage.removeItem("basket");
 }
 
 //si pas d'item dans le local storage : afficher "le panier est vide" + prix = 0 + quantitée = pas d'article ET cacher le form
@@ -110,7 +112,7 @@ if (cartProducts === null) {
 
         selectQuantity.forEach((quantity, i) => {
           quantity.addEventListener("change", () => {
-            // console.log(quantity.value, i);
+            // console.log(quantity.value);
 
             if (quantity.value == 0) {
               deletArticle(
@@ -118,7 +120,21 @@ if (cartProducts === null) {
                 quantity.parentElement.parentElement.parentElement.parentElement
               );
               // console.log(quantity.parentElement.parentElement.parentElement.parentElement);
+              totalQ = 0;
+              totalP = 0;
+
+              cartProducts.forEach((product, key) => {
+                totalQ = totalQ + parseInt(product[2]);
+                totalP = totalP + parseInt(product[2] * priceArray[key]);
+              });
+
+              totalQuantity.textContent = totalQ;
+
+              totalPrice.textContent = totalP;
+              // console.log(cartProducts);
             } else {
+              //recalculer le prix dynamiquement
+
               let newPrice = document.querySelectorAll(".product__price");
               // console.log(priceArray[i]);
               newPrice[i].textContent =
@@ -129,7 +145,7 @@ if (cartProducts === null) {
 
               totalQ = 0;
               totalP = 0;
-              cartProducts[i][2] = quantity.value;
+              cartProducts[i][2] = parseInt(quantity.value);
 
               cartProducts.forEach((product, key) => {
                 totalQ = totalQ + parseInt(product[2]);
@@ -143,11 +159,15 @@ if (cartProducts === null) {
                 cartProducts[i][2] * priceArray[i] +
                 parseInt(quantity.value) * priceArray[i];
             }
-
-            
+            if (cartProducts.length == 0) {
+              noItems();
+            }
+            localStorage.setItem("basket", JSON.stringify(cartProducts));
+            console.log(cartProducts);
           });
         });
 
+        //supprimer article avec click btn delet
         let deletBtn = document.querySelectorAll(".deleteItem");
 
         deletBtn.forEach((btn, i) => {
@@ -156,7 +176,25 @@ if (cartProducts === null) {
               i,
               btn.parentElement.parentElement.parentElement.parentElement
             );
-            // console.log(btn.parentElement.parentElement.parentElement.parentElement);
+            totalQ = 0;
+            totalP = 0;
+
+            // console.log(cartProducts);
+
+            cartProducts.forEach((product, key) => {
+              totalQ = totalQ + parseInt(product[2]);
+              totalP = totalP + parseInt(product[2] * priceArray[key]);
+            });
+
+            totalQuantity.textContent = totalQ;
+            console.log(cartProducts);
+            totalPrice.textContent = totalP;
+
+            if (cartProducts.length == 0) {
+              // console.log(cartProducts);
+              noItems();
+            }
+            localStorage.setItem("basket", JSON.stringify(cartProducts));
           });
         });
       });
@@ -335,7 +373,7 @@ form.addEventListener("submit", (e) => {
 
     //stocker dans le local storage
     localStorage.setItem("contact", JSON.stringify(contact));
-    // /body: JSON.stringify({ contact, products }),
+    //body: JSON.stringify({ contact, products }),
     //stocker dans le local storage
     localStorage.setItem("basket", JSON.stringify(cartProducts));
 
@@ -351,7 +389,7 @@ form.addEventListener("submit", (e) => {
 
     // alert("ok ça c'est fait");
 
-    //utiliser un fecth sur le /order : utiliser POST, contact puis le produit sous forme string. stringify
+    //utiliser un fetch sur le /order : utiliser POST, contact puis le produit sous forme string. stringify
     fetch("http://localhost:3000/api/products/order", {
       method: "POST",
       headers: {
@@ -377,7 +415,7 @@ form.addEventListener("submit", (e) => {
         alert("Une erreur est survenue merci de réesayer");
       });
   } else {
-    alert("manque un truc chef");
+    alert("Merci de renseigner tous les champs correctement");
   }
 });
 

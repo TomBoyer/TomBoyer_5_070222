@@ -15,7 +15,7 @@ If the server runs on another port for any reason, this is printed to the
 console when the server starts, e.g. `Listening on port 3001`.
 
 
-<!-- 1. ctr + shifr + ù (open new terminal)
+<!-- 1. ctr + ù (open new terminal)
 2. node -v (check node version)
 3. cd back (go back folder)
 4. node server (start back server in local host 3000) -->

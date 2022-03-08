@@ -28,7 +28,7 @@ fetch("http://localhost:3000/api/products/" + id, {
     // console.log(product);
 
     document.querySelector(".item__img").innerHTML = `
-    <img src="${product.imageUrl}" alt="${product.altTXT}"> 
+    <img src="${product.imageUrl}" alt="${product.altTxt}"> 
     `;
     document.querySelector("#title").innerText = product.name;
 

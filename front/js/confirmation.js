@@ -1,17 +1,5 @@
-// récupérer l'objet data stocké dans le local storage
-// créer fonction pour pointer la confirmation et injecter le numéro de commande si le local storage existe
 
-// const contact = JSON.parse(localStorage.getItem("contact"));
-// const cartProducts = JSON.parse(localStorage.getItem("basket"));
-
-// // const products = [];
-
-// cartProducts.forEach((cartProduct) => {
-//   for (let i = 0; i < cartProduct[2]; i++) {
-//     products.push(cartProduct[0]);
-//   }
-// });
-// // console.log(products, contact);
+// console.log(products, contact);
 
 const orderId = document.getElementById("orderId");
 
@@ -26,4 +14,4 @@ function clearLocalStorage() {
   localStorage.removeItem("contact");
   localStorage.removeItem("basket");
 }
-// clearLocalStorage();
+clearLocalStorage();
